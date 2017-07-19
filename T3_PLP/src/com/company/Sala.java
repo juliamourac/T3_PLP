@@ -22,6 +22,7 @@ public class Sala
 
     public void libera(){livre = true;}
     public void reserva(){livre = false;}
-
-
+    public boolean getEstado(){return livre;}
+    public boolean temProjetor(){return projetor;}
+    public int getCapacidade(){return capacidade;}
 }

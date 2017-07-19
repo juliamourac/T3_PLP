@@ -1,43 +1,71 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.Random;
+
 
 /**
  * Created by juliamourac on 7/10/17.
  */
 public class AulasTeoricas
 {
-    ArrayList<Sala> salas = new ArrayList<Sala>();
+    ArrayList<Sala> salas = new ArrayList<Sala>(5);
 
-    public boolean liberar(String _id)
+    public void geraSalas(int _num)
     {
-        int tam = salas.size();
-
-        for (int i = 0; i < tam; i++)
+        for(int K = 0; K != _num; K++)
         {
-            if (salas.get(i).getId().compareTo(_id))
-            {
-                salas.get(i).libera();
-                return true;
-            }
+            Random n = new Random();
+
+            boolean proj;
+            if (n.nextInt() % 2 == 0)
+                proj = true;
+            else
+                proj = false;
+
+            Sala s = new Sala("" + n.nextInt(200), "UFSCar", n.nextInt(61), proj, true);
+            salas.add(s);
         }
-        System.out.println("Sala "+_id+" não existe!");
-        return false;
+
     }
 
-    public boolean reservar(String _id)
+    /*Este método verifica se há alguma sala s livre no ArrayList salas
+    * Se há, o objeto é retornado
+    * Senão, nada é retornado*/
+    public Sala verificaSalaLivre(boolean _proj, int _cap)
     {
-        int tam = salas.size();
-
-        for (int i = 0; i < tam; i++)
+        for(Sala s: salas)
         {
-            if (salas.get(i).getId().compareTo(_id))
+            if(s.temProjetor() == _proj && _cap <= s.getCapacidade())
             {
-                salas.get(i).reserva();
-                return true;
+                if (s.getEstado())
+                    return s;
             }
         }
-        return false;
+        return null;
+    }
+
+    public synchronized void liberar (Sala s) throws InterruptedException
+    {
+        s.libera();
+        System.out.println("Sala "+s.getId()+" liberada!");
+        notify();
+    }
+
+    /*Verifica o arrayLista em busca de uma sala livre
+    * Se não encontrar, espera e repete o procedimendo
+    * Se encontrar, reserva a sala*/
+    public synchronized Sala reservar(String pdacesso, boolean _proj, int _cap)
+            throws InterruptedException
+    {
+        Sala s;
+        //Random t = new Random();
+        while((s = verificaSalaLivre(_proj,_cap)) == null)
+            wait();
+        s.reserva();
+        System.out.println("Sala "+s.getId()+" reservada para "+pdacesso);
+        notify();
+        return s;
     }
     
 }
